@@ -98,6 +98,11 @@ prompt_kubernetes() {
 
   local cluster=$(kubectl config current-context)
   local short_cluster=$(grep --colour=never -o '^[^.]*\.[^.]*'<<< "$cluster")
+
+  if [[ -z "$short_cluster" ]]; then
+    short_cluster="$cluster"
+  fi
+
   local namespace=$(kubectl config get-contexts ${cluster} --no-headers | awk '{print $5}')
   local foreground=$(generate_colour "${cluster}")
   if [[ -z "$namespace" ]] || [[ "$namespace" == 'default' ]]; then 
