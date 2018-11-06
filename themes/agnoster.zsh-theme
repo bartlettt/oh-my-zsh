@@ -97,7 +97,11 @@ generate_colour() {
 prompt_kubernetes() {
 
   local cluster=$(kubectl config current-context)
-  local short_cluster=$(grep --colour=never -o '^[^.]*\.[^.]*'<<< "$cluster")
+  if [[ "$cluster" =~ ^arn ]]; then
+      local short_cluster=$(grep --colour=never -Eo '[^/]+$' <<< "$cluster")
+  else 
+      local short_cluster=$(grep --colour=never -o '^[^.]*\.[^.]*'<<< "$cluster")
+  fi 
 
   if [[ -z "$short_cluster" ]]; then
     short_cluster="$cluster"
