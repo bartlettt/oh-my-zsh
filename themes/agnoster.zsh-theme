@@ -84,18 +84,38 @@ prompt_context() {
   fi
 }
 
+generate_colour() {
+  word="$1"
+  n=$(sha256sum <<< "$word" | grep -Eo "[[:digit:]]{3}"  | head -n1)
+  if (( n >= 16 )) && (( n <= 231 )); then
+    echo "$n"
+  else
+    generate_colour "$n"
+  fi 
+}
+
 prompt_kubernetes() {
 
   local cluster=$(kubectl config current-context)
-  local short_cluster=$(grep --colour=never -o '^[^.]*\.[^.]*'<<< "$cluster")
+  if [[ "$cluster" =~ ^arn ]]; then
+      local short_cluster=$(grep --colour=never -Eo '[^/]+$' <<< "$cluster")
+  else 
+      local short_cluster=$(grep --colour=never -o '^[^.]*\.[^.]*'<<< "$cluster")
+  fi 
+
+  if [[ -z "$short_cluster" ]]; then
+    short_cluster="$cluster"
+  fi
+
   local namespace=$(kubectl config get-contexts ${cluster} --no-headers | awk '{print $5}')
+  local foreground=$(generate_colour "${cluster}")
   if [[ -z "$namespace" ]] || [[ "$namespace" == 'default' ]]; then 
-    prompt_segment magenta black "☁️ ${short_cluster}☁️ "
+    prompt_segment $foreground black "☁️ ${short_cluster}☁️ "
   else
     if [[ "$namespace" =~ .*[Pp][Rr][Oo][Dd].* ]]; then 
       prompt_segment red black "☁️ ${short_cluster}|${namespace}☁️ "
     else 
-      prompt_segment magenta black "☁️ ${short_cluster}|${namespace}☁️ "
+      prompt_segment $foreground black "☁️ ${short_cluster}|${namespace}☁️ "
     fi
   fi 
 }
