@@ -98,7 +98,7 @@ prompt_kubernetes() {
 
   local cluster=$(kubectl config current-context)
   if [[ "$cluster" =~ ^arn ]]; then
-      local short_cluster=$(grep --colour=never -Eo '[^/]+$' <<< "$cluster")
+    local short_cluster=$(grep --colour=never -Eo '[^/]+$' <<< "$cluster" | grep --colour=never -Eo '^([^-]+-){3}[^-]+')
   else 
       local short_cluster=$(grep --colour=never -o '^[^.]*\.[^.]*'<<< "$cluster")
   fi 
